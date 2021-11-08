@@ -28,7 +28,7 @@ SELECT student, course, status FROM Registrations;
 
 SELECT student, course FROM UnreadMandatory;
 
---SELECT student, totalCredits, mandatoryLeft, mathCredits, researchCredits, seminarCourses, qualified FROM PathToGraduation;
+SELECT student, totalCredits, mandatoryLeft, mathCredits, researchCredits, seminarCourses, qualified FROM PathToGraduation;
 
 
 -- Life-hack: When working on a new view you can write it as a query here (without creating a view) and when it works just add CREATE VIEW and put it in views.sql
