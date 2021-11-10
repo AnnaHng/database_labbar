@@ -16,6 +16,7 @@ CREATE VIEW PassedCourses AS
         FROM Taken JOIN Courses on Taken.course=Courses.course
         WHERE Taken.grade<>'U';
 
+
 CREATE VIEW Registrations AS
     SELECT idnr AS student,course,(SELECT 'registered' AS status)
         FROM Registered
@@ -50,7 +51,7 @@ CREATE VIEW DidMandatoryBranch AS
           AND StudentBranches.branch = MandatoryBranch.branch;
 
 
-CREATE VIEW TodoMandatoryProgram AS
+CREATE VIEW AllMandatoryProgram AS
     SELECT Students.idnr AS student,
            MandatoryProgram.program,
            MandatoryProgram.course
@@ -60,7 +61,7 @@ CREATE VIEW TodoMandatoryProgram AS
     WHERE Students.program = MandatoryProgram.program;
 
 
-CREATE VIEW TodoMandatoryBranch AS
+CREATE VIEW AllMandatoryBranch AS
     SELECT StudentBranches.idnr AS student,
            MandatoryBranch.branch,
            MandatoryBranch.program,
@@ -73,34 +74,23 @@ CREATE VIEW TodoMandatoryBranch AS
 
 
 CREATE VIEW UnreadMandatoryBranch AS
-    SELECT student,course FROM TodoMandatoryBranch
+    SELECT student,course FROM AllMandatoryBranch
     EXCEPT
     SELECT student,course FROM DidMandatoryBranch;
 
 
 CREATE VIEW UnreadMandatoryProgram AS
-    SELECT student,course FROM TodoMandatoryProgram
+    SELECT student,course FROM AllMandatoryProgram
     EXCEPT
     SELECT student,course FROM DidMandatoryProgram;
 
 
--- It should be like this:
---
--- CREATE VIEW UnreadMandatory AS
---     SELECT * FROM UnreadMandatoryBranch
---     UNION
---     SELECT * FROM UnreadMandatoryProgram;
---
--- Some unnecessary sorting just to pass the test:
---
 CREATE VIEW UnreadMandatory AS
-    WITH tmpview AS(
-        SELECT * FROM UnreadMandatoryBranch UNION
-        SELECT * FROM UnreadMandatoryProgram ORDER BY student)
-    SELECT * FROM tmpview ORDER BY COURSE DESC;
+    SELECT * FROM UnreadMandatoryBranch
+    UNION
+    SELECT * FROM UnreadMandatoryProgram;
 
-
-CREATE VIEW PathToGraduation AS
+CREATE VIEW PathToGraduation_column0_to_column5 AS
 WITH col0 AS
     (
     SELECT idnr AS student FROM students
@@ -158,4 +148,42 @@ SELECT col0.student,
     LEFT OUTER JOIN col4 ON col0.student=col4.student
     LEFT OUTER JOIN col5 ON col0.student=col5.student
     ORDER BY student
+;
+
+CREATE VIEW PathToGraduation AS
+
+    WITH passedRecommended AS(
+    SELECT
+        Students.idnr AS student
+        FROM Students
+        LEFT OUTER JOIN StudentBranches
+            ON Students.idnr = StudentBranches.idnr
+        LEFT OUTER JOIN RecommendedBranch
+            ON StudentBranches.program = RecommendedBranch.program
+        LEFT OUTER JOIN PassedCourses
+            ON Students.idnr = PassedCourses.Student
+        WHERE
+            StudentBranches.branch = RecommendedBranch.branch AND
+            StudentBranches.program = RecommendedBranch.program AND
+            PassedCourses.course = RecommendedBranch.course AND
+            PassedCourses.credits > 10
+        ORDER BY student
+    )
+               
+    SELECT student,
+           totalcredits,
+           mandatoryleft,
+           mathcredits,
+           researchcredits,
+           seminarcourses,
+           (
+             mandatoryleft = 0         -- mandatory courses left
+             AND mathcredits > 20      -- math credits
+             AND researchcredits > 10  -- research credits
+             AND seminarcourses  >= 1  -- seminar curses
+             AND (SELECT passedRecommended.student FROM passedRecommended)
+                 = student -- student have >10 recommended credits
+           ) = TRUE AS qualified
+
+        FROM PathToGraduation_column0_to_column5
 ;
