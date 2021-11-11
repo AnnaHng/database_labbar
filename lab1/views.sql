@@ -63,28 +63,28 @@ WITH col0 AS
     col3 AS
     -- math credits
     (
-    SELECT student,sum(credits) as credits FROM PassedCourses
-        LEFT OUTER JOIN Classified
-        ON PassedCourses.course = Classified.course
-        WHERE class = 'math'
+    SELECT student,sum(credits) AS credits
+        FROM PassedCourses, Classified
+        WHERE PassedCourses.course = Classified.course AND
+            class = 'math'
         GROUP BY student
     ),
     col4 AS
     -- research credits
     (
-    SELECT student,sum(credits) as credits FROM PassedCourses
-        LEFT OUTER JOIN Classified
-        ON PassedCourses.course = Classified.course
-        WHERE class = 'research'
+    SELECT student,sum(credits) as credits
+        FROM PassedCourses, Classified
+        WHERE class = 'research' AND
+            PassedCourses.course = Classified.course
         GROUP BY student
     ),
     col5 AS
     -- seminar courses
     (
-    SELECT student,count(PassedCourses.course) as course FROM PassedCourses
-        LEFT OUTER JOIN Classified
-        ON PassedCourses.course = Classified.course
-        WHERE class = 'seminar'
+    SELECT student,count(PassedCourses.course) as course
+        FROM PassedCourses, Classified
+        WHERE PassedCourses.course = Classified.course AND
+            class = 'seminar'
         GROUP BY student
     )
 SELECT col0.student,
