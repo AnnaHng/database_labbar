@@ -1,5 +1,4 @@
 
-
 CREATE VIEW BasicInformation AS
     SELECT students.idnr,name,login,students.program,branch
         FROM students LEFT OUTER JOIN studentbranches
@@ -25,70 +24,24 @@ CREATE VIEW Registrations AS
         FROM WaitingList;
 
 
-CREATE VIEW DidMandatoryProgram AS
-    SELECT PassedCourses.student,
-           PassedCourses.course,
-           MandatoryProgram.program
-    FROM Students 
-    LEFT OUTER JOIN PassedCourses
-        ON Students.idnr = PassedCourses.student
-    LEFT OUTER JOIN MandatoryProgram
-        ON MandatoryProgram.course = PassedCourses.course
-    WHERE Students.program = MandatoryProgram.program;
-
-
-CREATE VIEW DidMandatoryBranch AS
-    SELECT PassedCourses.student,
-           PassedCourses.course,
-           MandatoryBranch.branch,
-           MandatoryBranch.program
-    FROM StudentBranches
-    LEFT OUTER JOIN PassedCourses
-        ON StudentBranches.idnr = PassedCourses.student
-    LEFT OUTER JOIN MandatoryBranch
-        ON MandatoryBranch.course = PassedCourses.course
-    WHERE StudentBranches.program = MandatoryBranch.program
-          AND StudentBranches.branch = MandatoryBranch.branch;
-
-
-CREATE VIEW AllMandatoryProgram AS
-    SELECT Students.idnr AS student,
-           MandatoryProgram.program,
-           MandatoryProgram.course
-    FROM Students 
-    LEFT OUTER JOIN MandatoryProgram
-        ON Students.program = MandatoryProgram.program
-    WHERE Students.program = MandatoryProgram.program;
-
-
-CREATE VIEW AllMandatoryBranch AS
-    SELECT StudentBranches.idnr AS student,
-           MandatoryBranch.branch,
-           MandatoryBranch.program,
-           MandatoryBranch.course
-    FROM StudentBranches
-    LEFT OUTER JOIN MandatoryBranch
-        ON StudentBranches.program = MandatoryBranch.program
-    WHERE StudentBranches.program = MandatoryBranch.program
-        AND StudentBranches.branch = MandatoryBranch.branch;
-
-
-CREATE VIEW UnreadMandatoryBranch AS
-    SELECT student,course FROM AllMandatoryBranch
-    EXCEPT
-    SELECT student,course FROM DidMandatoryBranch;
-
-
-CREATE VIEW UnreadMandatoryProgram AS
-    SELECT student,course FROM AllMandatoryProgram
-    EXCEPT
-    SELECT student,course FROM DidMandatoryProgram;
+CREATE VIEW UnreadMandatoryHelper AS
+    SELECT StudentBranches.idnr AS student,MandatoryBranch.course
+        FROM StudentBranches, MandatoryBranch
+        WHERE StudentBranches.branch = MandatoryBranch.branch AND
+              StudentBranches.program = MandatoryBranch.program
+    UNION
+    SELECT Students.idnr,MandatoryProgram.course 
+        FROM Students, MandatoryProgram
+        WHERE Students.program = MandatoryProgram.program;
 
 
 CREATE VIEW UnreadMandatory AS
-    SELECT * FROM UnreadMandatoryBranch
-    UNION
-    SELECT * FROM UnreadMandatoryProgram;
+    SELECT UnreadMandatoryHelper.student,UnreadMandatoryHelper.course 
+        FROM UnreadMandatoryHelper
+    EXCEPT 
+    SELECT PassedCourses.student,PassedCourses.course 
+        FROM PassedCourses;
+
 
 CREATE VIEW PathToGraduation_column0_to_column5 AS
 WITH col0 AS
@@ -155,19 +108,14 @@ CREATE VIEW PathToGraduation AS
     WITH passedRecommended AS(
     SELECT
         Students.idnr AS student
-        FROM Students
-        LEFT OUTER JOIN StudentBranches
-            ON Students.idnr = StudentBranches.idnr
-        LEFT OUTER JOIN RecommendedBranch
-            ON StudentBranches.program = RecommendedBranch.program
-        LEFT OUTER JOIN PassedCourses
-            ON Students.idnr = PassedCourses.Student
+        FROM Students, StudentBranches, RecommendedBranch, PassedCourses
         WHERE
+            Students.idnr = StudentBranches.idnr AND
+            Students.idnr = PassedCourses.Student AND
             StudentBranches.branch = RecommendedBranch.branch AND
             StudentBranches.program = RecommendedBranch.program AND
             PassedCourses.course = RecommendedBranch.course AND
             PassedCourses.credits > 10
-        ORDER BY student
     )
                
     SELECT student,
