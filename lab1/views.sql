@@ -43,7 +43,7 @@ CREATE VIEW UnreadMandatory AS
         FROM PassedCourses;
 
 
-CREATE VIEW PathToGraduation_column0_to_column5 AS
+CREATE VIEW PathToGraduationHelper AS
 WITH
     -- student
     col0 AS (SELECT idnr AS student FROM students),
@@ -75,52 +75,45 @@ WITH
              FROM PassedCourses, Classified
              WHERE PassedCourses.course = Classified.course AND
                    classification = 'seminar'
-             GROUP BY student)
+             GROUP BY student),
+    -- recommended courses
+    col6 AS(SELECT Students.idnr AS student, sum(PassedCourses.credits) AS credits
+            FROM Students, StudentBranches, RecommendedBranch, PassedCourses
+            WHERE
+                Students.idnr = StudentBranches.student
+                AND Students.idnr = PassedCourses.student
+                AND StudentBranches.branch = RecommendedBranch.branch
+                AND StudentBranches.program = RecommendedBranch.program
+                AND PassedCourses.course = RecommendedBranch.course
+            GROUP BY students.idnr)
 
 SELECT col0.student,
-       coalesce(col1.totalcredits,0)  AS totalcredits,
-       coalesce(col2.mandatoryleft,0) AS mandatoryleft,
-       coalesce(col3.credits,0)       AS mathcredits,
-       coalesce(col4.credits,0)       AS researchcredits,
-       coalesce(col5.course,0)        AS seminarcourses,
-       'TODO' as qualified
+       coalesce(col1.totalcredits,0)   AS totalcredits,
+       coalesce(col2.mandatoryleft,0)  AS mandatoryleft,
+       coalesce(col3.credits,0)        AS mathcredits,
+       coalesce(col4.credits,0)        AS researchcredits,
+       coalesce(col5.course,0)         AS seminarcourses,
+       coalesce(col6.credits,0)        AS recommendedcredits
     FROM col0
     LEFT OUTER JOIN col1 ON col0.student=col1.student
     LEFT OUTER JOIN col2 ON col0.student=col2.student
     LEFT OUTER JOIN col3 ON col0.student=col3.student
     LEFT OUTER JOIN col4 ON col0.student=col4.student
     LEFT OUTER JOIN col5 ON col0.student=col5.student
-;
+    LEFT OUTER JOIN col6 ON col0.student=col6.student;
+
 
 CREATE VIEW PathToGraduation AS
-
-    WITH passedRecommended AS(
-    SELECT
-        Students.idnr AS student
-        FROM Students, StudentBranches, RecommendedBranch, PassedCourses
-        WHERE
-            Students.idnr = StudentBranches.Student AND
-            Students.idnr = PassedCourses.Student AND
-            StudentBranches.branch = RecommendedBranch.branch AND
-            StudentBranches.program = RecommendedBranch.program AND
-            PassedCourses.course = RecommendedBranch.course AND
-            PassedCourses.credits > 10
-    )
-               
     SELECT student,
            totalcredits,
            mandatoryleft,
            mathcredits,
            researchcredits,
            seminarcourses,
-           (
-             mandatoryleft = 0         -- mandatory courses left
-             AND mathcredits > 20      -- math credits
-             AND researchcredits > 10  -- research credits
-             AND seminarcourses  >= 1  -- seminar curses
-             AND (SELECT passedRecommended.student FROM passedRecommended)
-                 = student -- student have >10 recommended credits
-           ) = TRUE AS qualified
-
-        FROM PathToGraduation_column0_to_column5
-;
+                 mandatoryleft = 0             -- mandatory courses left
+                 AND mathcredits > 20          -- math credits
+                 AND researchcredits > 10      -- research credits
+                 AND seminarcourses  >= 1      -- seminar curses
+                 AND recommendedcredits >= 10  -- recommended credits
+           AS qualified
+        FROM PathToGraduationHelper;
