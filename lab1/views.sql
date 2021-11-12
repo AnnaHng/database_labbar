@@ -7,12 +7,12 @@ CREATE VIEW BasicInformation AS
 
 CREATE VIEW FinishedCourses AS
     SELECT student,Taken.course,grade,credits
-        FROM Taken JOIN Courses ON Taken.course=Courses.code;
+        FROM Taken JOIN Courses ON Taken.course = Courses.code;
 
 
 CREATE VIEW PassedCourses AS
     SELECT student,Taken.course,credits
-        FROM Taken JOIN Courses on Taken.course=Courses.code
+        FROM Taken JOIN Courses on Taken.course = Courses.code
         WHERE Taken.grade<>'U';
 
 
@@ -64,20 +64,21 @@ WITH
              GROUP BY student),
 
     -- research credits
-    col4 AS (SELECT student,sum(credits) as credits
+    col4 AS (SELECT student,sum(credits) AS credits
              FROM PassedCourses, Classified
              WHERE classification = 'research' AND
                    PassedCourses.course = Classified.course
              GROUP BY student),
 
     -- seminar courses
-    col5 AS (SELECT student,count(PassedCourses.course) as course
+    col5 AS (SELECT student,count(PassedCourses.course) AS course
              FROM PassedCourses, Classified
              WHERE PassedCourses.course = Classified.course AND
                    classification = 'seminar'
              GROUP BY student),
+
     -- recommended courses
-    col6 AS(SELECT Students.idnr AS student, sum(PassedCourses.credits) AS credits
+    col6 AS (SELECT Students.idnr AS student, sum(PassedCourses.credits) AS credits
             FROM Students, StudentBranches, RecommendedBranch, PassedCourses
             WHERE
                 Students.idnr = StudentBranches.student
@@ -111,8 +112,8 @@ CREATE VIEW PathToGraduation AS
            researchcredits,
            seminarcourses,
                  mandatoryleft = 0             -- mandatory courses left
-                 AND mathcredits > 20          -- math credits
-                 AND researchcredits > 10      -- research credits
+                 AND mathcredits >= 20         -- math credits
+                 AND researchcredits >= 10     -- research credits
                  AND seminarcourses  >= 1      -- seminar curses
                  AND recommendedcredits >= 10  -- recommended credits
            AS qualified
