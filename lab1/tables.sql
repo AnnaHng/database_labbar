@@ -1,3 +1,4 @@
+
 -- INSERT INTO Branches VALUES ('B1','Prog1');
 CREATE TABLE Branches(
     name CHAR(2) NOT NULL,
