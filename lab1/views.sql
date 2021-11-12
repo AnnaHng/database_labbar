@@ -2,30 +2,30 @@
 CREATE VIEW BasicInformation AS
     SELECT students.idnr,name,login,students.program,branch
         FROM students LEFT OUTER JOIN studentbranches
-        ON students.idnr = studentbranches.idnr;
+        ON students.idnr = studentbranches.student;
 
 
 CREATE VIEW FinishedCourses AS
-    SELECT idnr AS student,Taken.course,grade,credits
-        FROM Taken JOIN Courses ON Taken.course=Courses.course;
+    SELECT student,Taken.course,grade,credits
+        FROM Taken JOIN Courses ON Taken.course=Courses.code;
 
 
 CREATE VIEW PassedCourses AS
-    SELECT idnr AS student,Taken.course,credits
-        FROM Taken JOIN Courses on Taken.course=Courses.course
+    SELECT student,Taken.course,credits
+        FROM Taken JOIN Courses on Taken.course=Courses.code
         WHERE Taken.grade<>'U';
 
 
 CREATE VIEW Registrations AS
-    SELECT idnr AS student,course,(SELECT 'registered' AS status)
+    SELECT student,course,(SELECT 'registered' AS status)
         FROM Registered
     UNION
-    SELECT idnr AS student,course,(SELECT 'waiting' AS status)
+    SELECT student,course,(SELECT 'waiting' AS status)
         FROM WaitingList;
 
 
 CREATE VIEW UnreadMandatoryHelper AS
-    SELECT StudentBranches.idnr AS student,MandatoryBranch.course
+    SELECT student,MandatoryBranch.course
         FROM StudentBranches, MandatoryBranch
         WHERE StudentBranches.branch = MandatoryBranch.branch AND
               StudentBranches.program = MandatoryBranch.program
@@ -59,13 +59,14 @@ WITH
     -- math credits
     col3 AS (SELECT student,sum(credits) AS credits
              FROM PassedCourses, Classified
-             WHERE PassedCourses.course = Classified.course AND class = 'math'
+             WHERE PassedCourses.course = Classified.course AND
+                   classification= 'math'
              GROUP BY student),
 
     -- research credits
     col4 AS (SELECT student,sum(credits) as credits
              FROM PassedCourses, Classified
-             WHERE class = 'research' AND
+             WHERE classification = 'research' AND
                    PassedCourses.course = Classified.course
              GROUP BY student),
 
@@ -73,7 +74,7 @@ WITH
     col5 AS (SELECT student,count(PassedCourses.course) as course
              FROM PassedCourses, Classified
              WHERE PassedCourses.course = Classified.course AND
-                   class = 'seminar'
+                   classification = 'seminar'
              GROUP BY student)
 
 SELECT col0.student,
@@ -98,7 +99,7 @@ CREATE VIEW PathToGraduation AS
         Students.idnr AS student
         FROM Students, StudentBranches, RecommendedBranch, PassedCourses
         WHERE
-            Students.idnr = StudentBranches.idnr AND
+            Students.idnr = StudentBranches.Student AND
             Students.idnr = PassedCourses.Student AND
             StudentBranches.branch = RecommendedBranch.branch AND
             StudentBranches.program = RecommendedBranch.program AND
