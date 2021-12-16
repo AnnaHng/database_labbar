@@ -1,0 +1,72 @@
+a)
+studentIdnr,studentName,login,branchName,programName,courseCode,courseName,credits,departmentName,capacity,classification,grade,position
+
+studentIdnr -> studentName
+studentIdnr -> programName
+
+login -> studentIdnr
+
+studentIdnr,courseCode -> grade
+studentIdnr,courseCode -> position
+studentIdnr -> login,branchName
+
+courseCode -> credits
+courseCode -> courseName
+courseCode -> capacity
+
+courseCode -> departmentName
+courseCode,position -> studentIdnr
+
+
+c)
+MVD:
+courseCode ->> classification
+
+------------------------------------------------------------------------------
+
+##########################
+## b) Normalize to BCNF ##
+##########################
+
+-------------------------------------------------------------------------------
+
+Attributes
+
+studentIdnr programName login branchName studentName
+
+Functional Dependencies
+
+studentIdnr  ->       programName    login    branchName    studentName 
+login        ->       studentIdnr 
+
+--------------------------------------------------------------------------------
+
+Attributes
+
+studentIdnr courseName classification
+
+Functional Dependencies
+
+
+-------------------------------------------------------------------------------
+
+Attributes
+
+courseName courseCode credits capacity departmentName
+
+Functional Dependencies
+
+courseCode    ->   courseName   departmentName  credits    capacity    
+
+-------------------------------------------------------------------------------
+
+Attributes
+
+courseCode studentIdnr position grade
+
+Functional Dependencies
+
+courseCode    studentIdnr   ->      position    grade   
+courseCode    position      ->      studentIdnr   
+
+-------------------------------------------------------------------------------     

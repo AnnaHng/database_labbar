@@ -1,6 +1,19 @@
+
+INSERT INTO Departments VALUES ('Department1', 'Dep1');
+INSERT INTO Departments VALUES ('Department2', 'Dep2');
+INSERT INTO Departments VALUES ('Department3', 'Dep3');
+
+INSERT INTO Programs VALUES ('Program1', 'Prog1', 'Dep2');
+INSERT INTO Programs VALUES ('Program2', 'Prog2', 'Dep3');
+INSERT INTO Programs VALUES ('Program3', 'Prog3', 'Dep3');
+
 INSERT INTO Branches VALUES ('B1','Prog1');
 INSERT INTO Branches VALUES ('B2','Prog1');
-INSERT INTO Branches VALUES ('B1','Prog2');
+INSERT INTO Branches VALUES ('B2','Prog2'); --B1
+--INSERT INTO Branches VALUES ('B2','Prog1');
+-- It's possible for students to attend one program,
+-- and choose a branch from another. Prevent this!
+--INSERT INTO Branches VALUES ('B1','Prog2');
 
 INSERT INTO Students VALUES ('1111111111','N1','ls1','Prog1');
 INSERT INTO Students VALUES ('2222222222','N2','ls2','Prog1');
@@ -29,24 +42,17 @@ INSERT INTO Classified VALUES ('CCC444','seminar');
 
 
 INSERT INTO StudentBranches VALUES ('2222222222','B1','Prog1');
-
-
--- TEST
-INSERT INTO StudentBranches VALUES ('2222222222','B2','Prog2');
--- TEST
-
-
-INSERT INTO StudentBranches VALUES ('3333333333','B1','Prog2');
+--INSERT INTO StudentBranches VALUES ('3333333333','B1','Prog2');
 INSERT INTO StudentBranches VALUES ('4444444444','B1','Prog1');
-INSERT INTO StudentBranches VALUES ('5555555555','B1','Prog2');
+--INSERT INTO StudentBranches VALUES ('5555555555','B1','Prog2');
 
 INSERT INTO MandatoryProgram VALUES ('CCC111','Prog1');
 
 INSERT INTO MandatoryBranch VALUES ('CCC333', 'B1', 'Prog1');
-INSERT INTO MandatoryBranch VALUES ('CCC444', 'B1', 'Prog2');
+--INSERT INTO MandatoryBranch VALUES ('CCC444', 'B1', 'Prog2');
 
 INSERT INTO RecommendedBranch VALUES ('CCC222', 'B1', 'Prog1');
-INSERT INTO RecommendedBranch VALUES ('CCC333', 'B1', 'Prog2');
+--INSERT INTO RecommendedBranch VALUES ('CCC333', 'B1', 'Prog2');
 
 INSERT INTO Registered VALUES ('1111111111','CCC111');
 INSERT INTO Registered VALUES ('1111111111','CCC222');

@@ -1,0 +1,71 @@
+Department(abbrevation, name)
+UNIQUE name
+
+
+Program(name, abbrevation, department)
+UNIQUE abbreviation
+department → Department.abbreviation
+
+
+Branches(name, program)
+program → Program.abbreviation
+
+
+Students(idnr, name, _login, program)
+UNIQUE login
+UNIQUE idnr, program
+program → Program.abbreviation
+
+
+Courses(code, name, credits, department)
+UNIQUE code
+department → Departments.abbreviation
+
+
+LimitedCourses(code, capacity)
+code → Courses.code
+
+
+Classifications(name)
+
+
+Classified(course, classification)
+course → courses.code
+classification → Classifications.name
+
+
+StudentBranches(student, branch, program)
+(branch, program) → Branches.(name, program)
+(student, program) → Students.(idnr, program)
+
+
+MandatoryProgram(course, program)
+course → Courses.code
+program → Program.abbreviation
+
+
+MandatoryBranch(course, branch, program)
+course → Courses.code
+(branch, program) → Branches.(name, program)
+
+
+RecommendedBranch(course, branch, program)
+course → Courses.code
+(branch, program) → Branches.(name, program)
+
+
+Registered(student, course)
+student → Students.idnr
+course → Courses.code
+
+
+Taken(student, course, grade) UNIQUE grade
+student → Students.idnr
+course → Courses.code
+
+
+WaitingList(student, course, position)
+UNIQUE course, position
+student → Students.idnr
+course → Limitedcourses.code 
+
